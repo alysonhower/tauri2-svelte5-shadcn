@@ -32,11 +32,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          bun-version: latest
-      - run: bun i
+          node-version: '23'
+      - name: Install frontend dependencies
+        run: npm ci
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
@@ -54,7 +55,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          tagName: v__VERSION__
           releaseName: 'v__VERSION__'
           releaseBody: 'See [CHANGES.md](https://github.com/alysonhower/tauri2-svelte5-shadcn/blob/main/CHANGES.md) for a complete list of changes.'
           releaseDraft: true
