@@ -4,6 +4,7 @@ version = "1.0.0"
 description = "A simple desktop application template combining Tauri 2 with Svelte 5 and shadcn-svelte with a basic ci/cd implemented."
 authors = ["Alysonhower Veras Vieira"]
 license = "MIT"
+repository = "alysonhower/tauri2-svelte5-shadcn"
 edition = "2021"
 rust-version = "1.77.2"
 
@@ -14,10 +15,12 @@ name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.1", features = [] }
+tauri-build = { version = "2.2.0", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-# tauri-plugin-shell = "2" # uncomment to use shell
-serde_json = "1"
-serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.5.0", features = [] }
+tauri-plugin-log = "2.0.0-rc"
+thiserror = "2.0.12"

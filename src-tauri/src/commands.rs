@@ -1,4 +1,2 @@
-#[tauri::command]
-pub fn greet(name: String) -> String {
-  format!("Hello, {}!", name)
-}
+pub mod default;
+pub mod errors;
