@@ -1,12 +1,8 @@
 mod commands;
 use commands::default::{read, write};
 
+#[allow(clippy::missing_panics_doc)]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-/// Runs the Tauri application.
-///
-/// # Panics
-///
-/// This function will panic if the Tauri application fails to run or if there's an error during setup.
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
