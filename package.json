@@ -1,11 +1,10 @@
 {
-	"name": "tauri2-svelte5-shadcn",
+	"name": "smolpc-codehelper",
 	"private": true,
 	"version": "2.0.0",
-	"description": "A simple desktop application template combining Tauri 2 with Svelte 5 and shadcn-svelte with a basic ci/cd implemented.",
+	"description": "SmolPC Code Helper - AI-powered coding assistant for secondary school students",
 	"author": {
-		"name": "Alysonhower Veras Vieira",
-		"email": "contato@alysonhower.dev"
+		"name": "SmolPC Team"
 	},
 	"type": "module",
 	"scripts": {

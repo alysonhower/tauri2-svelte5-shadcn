@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "tauri2-svelte5-shadcn",
+  "productName": "SmolPC Code Helper",
   "version": "2.0.0",
-  "identifier": "com.tauri2-svelte5-shadcn.dev",
+  "identifier": "com.smolpc.codehelper",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "tauri2-svelte5-shadcn",
-        "width": 800,
-        "height": 600,
+        "title": "SmolPC Code Helper",
+        "width": 900,
+        "height": 800,
         "resizable": true,
         "fullscreen": false
       }
