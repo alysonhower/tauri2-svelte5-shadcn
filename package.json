@@ -22,7 +22,7 @@
 		"@eslint/js": "^10.0.1",
 		"@lucide/svelte": "^0.577.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@tauri-apps/cli": "^2.10.1",
+		"@tauri-apps/cli": "^2.11.2",
 		"@tsconfig/svelte": "^5.0.8",
 		"eslint": "^10.0.3",
 		"eslint-config-prettier": "^10.1.8",
@@ -41,7 +41,7 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.2.1",
-		"@tauri-apps/api": "^2.10.1",
+		"@tauri-apps/api": "^2.11.0",
 		"@types/node": "^25.5.0",
 		"clsx": "^2.1.1",
 		"tailwind-merge": "^3.5.0",
