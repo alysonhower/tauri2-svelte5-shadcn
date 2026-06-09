@@ -24,3 +24,6 @@ log = "0.4"
 tauri = { version = "2.11.2", features = [] }
 tauri-plugin-log = "2.8.0"
 thiserror = "2.0.18"
+
+[dev-dependencies]
+tempfile = "3"
