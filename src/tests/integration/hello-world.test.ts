@@ -60,9 +60,7 @@ describe('HelloWorld — integration smoke test', () => {
 		// Wait for $effect to fire
 		await new Promise((r) => setTimeout(r, 10));
 
-		const readCalls = mockInvoke.mock.calls.filter(
-			(call: unknown[]) => call[0] === 'read'
-		);
+		const readCalls = mockInvoke.mock.calls.filter((call: unknown[]) => call[0] === 'read');
 		expect(readCalls.length).toBeGreaterThanOrEqual(2);
 
 		const paths = readCalls.map((call: unknown[]) => (call[1] as { path: string }).path);

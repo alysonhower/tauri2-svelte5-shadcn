@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { cn } from '$lib/utils';
-import type { WithoutChild, WithoutChildren, WithoutChildrenOrChild, WithElementRef } from '$lib/utils';
+import type {
+	WithoutChild,
+	WithoutChildren,
+	WithoutChildrenOrChild,
+	WithElementRef
+} from '$lib/utils';
 
 // ---------------------------------------------------------------------------
 // Tests: Utility functions and types
@@ -13,7 +18,8 @@ describe('cn() — class name utility', () => {
 	});
 
 	it('handles conditional classes (falsy values)', () => {
-		expect(cn('base', false && 'hidden', undefined, null, 'active')).toBe('base active');
+		const isHidden = false;
+		expect(cn('base', isHidden && 'hidden', undefined, null, 'active')).toBe('base active');
 	});
 
 	it('resolves Tailwind conflicts (last wins)', () => {

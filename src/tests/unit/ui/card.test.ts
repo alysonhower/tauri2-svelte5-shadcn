@@ -61,10 +61,20 @@ describe('Card — smoke / regression', () => {
 
 	describe('barrel exports — index.ts re-exports all sub-components', () => {
 		const expected = [
-			'Root', 'Content', 'Description', 'Footer',
-			'Header', 'Title', 'Action',
-			'Card', 'CardContent', 'CardDescription',
-			'CardFooter', 'CardHeader', 'CardTitle', 'CardAction'
+			'Root',
+			'Content',
+			'Description',
+			'Footer',
+			'Header',
+			'Title',
+			'Action',
+			'Card',
+			'CardContent',
+			'CardDescription',
+			'CardFooter',
+			'CardHeader',
+			'CardTitle',
+			'CardAction'
 		];
 
 		for (const name of expected) {

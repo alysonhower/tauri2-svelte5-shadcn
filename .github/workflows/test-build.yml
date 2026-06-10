@@ -58,4 +58,3 @@ jobs:
 
       - name: Build Tauri
         run: npm run tauri build
-
