@@ -27,12 +27,12 @@ jobs:
 
     runs-on: 'ubuntu-24.04'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '23'
+          node-version: '24'
       - name: Install frontend dependencies
         run: npm ci
 
@@ -43,6 +43,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Type check (svelte-check + tsc)
+        run: npm run check
+
+      - name: Lint (prettier + eslint)
+        run: npm run lint
+
+      - name: Frontend unit tests (Vitest)
+        run: npm run test:unit
+
+      - name: Rust unit tests (cargo test)
+        run: npm run test:rust
 
       - name: Build Tauri
         run: npm run tauri build

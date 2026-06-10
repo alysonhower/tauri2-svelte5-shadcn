@@ -1,14 +1,11 @@
 {
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "editor.quickSuggestions": {
-        "strings": "on"
-    },
-    "rust-analyzer.cargo.targetDir": true,
-    "rust-analyzer.check.command": "clippy",
-    "rust-analyzer.check.extraArgs": [
-        "--",
-        "-Wclippy::pedantic"
-    ]
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"editor.quickSuggestions": {
+		"strings": "on"
+	},
+	"rust-analyzer.cargo.targetDir": true,
+	"rust-analyzer.check.command": "clippy",
+	"rust-analyzer.check.extraArgs": ["--", "-Wclippy::pedantic"]
 }
