@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { mockInvoke } from '../setup';
 import HelloWorld from '$lib/components/HelloWorld.svelte';
 
@@ -57,15 +57,15 @@ describe('HelloWorld — integration smoke test', () => {
 
 	it('calls invoke("read") on mount for both files', async () => {
 		render(HelloWorld);
-		// Wait for $effect to fire
-		await new Promise((r) => setTimeout(r, 10));
 
-		const readCalls = mockInvoke.mock.calls.filter((call: unknown[]) => call[0] === 'read');
-		expect(readCalls.length).toBeGreaterThanOrEqual(2);
+		await waitFor(() => {
+			const readCalls = mockInvoke.mock.calls.filter((call: unknown[]) => call[0] === 'read');
+			expect(readCalls.length).toBeGreaterThanOrEqual(2);
 
-		const paths = readCalls.map((call: unknown[]) => (call[1] as { path: string }).path);
-		expect(paths).toContain('name.txt');
-		expect(paths).toContain('greet.txt');
+			const paths = readCalls.map((call: unknown[]) => (call[1] as { path: string }).path);
+			expect(paths).toContain('name.txt');
+			expect(paths).toContain('greet.txt');
+		});
 	});
 
 	it('contains a Card with shadow-xl class', () => {
