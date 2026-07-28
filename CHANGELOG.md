@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.1 (2026-07-28)
+
+- Use Tailwind CSS 4 canonical utility forms to eliminate editor diagnostics.
+- Keep intentional Svelte `$inspect` instrumentation with a line-scoped ESLint suppression.
+- Ignore Rust build output and generated Tauri schemas in the development watcher to prevent unnecessary recursive rebuilds.
+
 ## 2.1.0 (2026-07-28)
 
 - Add comprehensive frontend regression tests with Vitest and Testing Library.
