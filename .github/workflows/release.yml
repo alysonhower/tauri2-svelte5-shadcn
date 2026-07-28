@@ -170,7 +170,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.validate-release.outputs.tag }}
         run: |
-          release_json="$(gh release view "$RELEASE_TAG" --json isDraft,isPrerelease,assets)"
+          release_json="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease,assets)"
 
           if [[ "$(jq -r '.isDraft' <<< "$release_json")" != "true" ]]; then
             echo "::error::Release $RELEASE_TAG must still be a draft before publication."
@@ -198,4 +198,4 @@ jobs:
             fi
           done
 
-          gh release edit "$RELEASE_TAG" --draft=false --latest --verify-tag
+          gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest --verify-tag
