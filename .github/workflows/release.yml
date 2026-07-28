@@ -3,15 +3,106 @@ name: 'publish'
 on:
   push:
     tags:
-      - v*.*.*
+      - 'v*.*.*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to build and publish (for example, v2.1.0)'
+        required: true
+        type: string
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
+  validate-release:
+    permissions:
+      contents: read
+    runs-on: 'ubuntu-24.04'
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Resolve and validate release tag
+        id: release
+        shell: bash
+        env:
+          DISPATCH_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            tag="$DISPATCH_TAG"
+          else
+            tag="$GITHUB_REF_NAME"
+          fi
+
+          if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Release tag '$tag' must use the stable SemVer format vMAJOR.MINOR.PATCH."
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.release.outputs.tag }}
+
+      - name: Validate version metadata
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const expected = process.env.RELEASE_VERSION;
+          const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const packageLock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'));
+          const tauriConfig = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+          const cargoToml = fs.readFileSync('src-tauri/Cargo.toml', 'utf8');
+          const cargoLock = fs.readFileSync('src-tauri/Cargo.lock', 'utf8');
+
+          const cargoManifestVersion = cargoToml.match(
+            /^\[package\][\s\S]*?^version = "([^"]+)"/m
+          )?.[1];
+          const cargoLockVersion = cargoLock.match(
+            /\[\[package\]\]\r?\nname = "app"\r?\nversion = "([^"]+)"/
+          )?.[1];
+
+          const versions = {
+            'package.json': packageJson.version,
+            'package-lock.json': packageLock.version,
+            'package-lock.json root package': packageLock.packages?.['']?.version,
+            'src-tauri/tauri.conf.json': tauriConfig.version,
+            'src-tauri/Cargo.toml': cargoManifestVersion,
+            'src-tauri/Cargo.lock app package': cargoLockVersion
+          };
+
+          const mismatches = Object.entries(versions).filter(([, version]) => version !== expected);
+          if (mismatches.length > 0) {
+            for (const [source, version] of mismatches) {
+              console.error(`::error file=${source}::Expected version ${expected}, found ${version ?? 'missing'}.`);
+            }
+            process.exit(1);
+          }
+          NODE
+
+      - name: Reject an already-published release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if release_json="$(gh release view "$RELEASE_TAG" --json isDraft 2>/dev/null)"; then
+            if [[ "$(jq -r '.isDraft' <<< "$release_json")" != "true" ]]; then
+              echo "::error::Release $RELEASE_TAG is already published and cannot be rebuilt."
+              exit 1
+            fi
+          fi
+
   publish-tauri:
+    needs: validate-release
     permissions:
       contents: write
     strategy:
@@ -31,6 +122,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.validate-release.outputs.tag }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -51,13 +144,58 @@ jobs:
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Build Tauri
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'v__VERSION__'
-          releaseBody: 'See [CHANGES.md](https://github.com/alysonhower/tauri2-svelte5-shadcn/blob/main/CHANGES.md) for a complete list of changes.'
+          tagName: ${{ needs.validate-release.outputs.tag }}
+          releaseName: ${{ needs.validate-release.outputs.tag }}
+          releaseBody: 'See [CHANGELOG.md](https://github.com/alysonhower/tauri2-svelte5-shadcn/blob/${{ needs.validate-release.outputs.tag }}/CHANGELOG.md) for a complete list of changes.'
           releaseDraft: true
           prerelease: false
+          retryAttempts: 3
           args: ${{ matrix.args }}
+
+  publish-release:
+    needs:
+      - validate-release
+      - publish-tauri
+    permissions:
+      contents: write
+    runs-on: 'ubuntu-24.04'
+    steps:
+      - name: Verify release assets and publish
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.validate-release.outputs.tag }}
+        run: |
+          release_json="$(gh release view "$RELEASE_TAG" --json isDraft,isPrerelease,assets)"
+
+          if [[ "$(jq -r '.isDraft' <<< "$release_json")" != "true" ]]; then
+            echo "::error::Release $RELEASE_TAG must still be a draft before publication."
+            exit 1
+          fi
+
+          if [[ "$(jq -r '.isPrerelease' <<< "$release_json")" != "false" ]]; then
+            echo "::error::Release $RELEASE_TAG must not be marked as a prerelease."
+            exit 1
+          fi
+
+          asset_count="$(jq '[.assets[] | select(.size > 0)] | length' <<< "$release_json")"
+          if [[ "$asset_count" -ne 7 ]]; then
+            echo "::error::Expected 7 non-empty release assets, found $asset_count."
+            jq -r '.assets[] | "\(.name) (\(.size) bytes)"' <<< "$release_json"
+            exit 1
+          fi
+
+          for suffix in '.dmg' '.app.tar.gz' '.AppImage' '.deb' '.rpm' '.exe' '.msi'; do
+            if ! jq -e --arg suffix "$suffix" \
+              '[.assets[] | select(.size > 0 and (.name | endswith($suffix)))] | length == 1' \
+              <<< "$release_json" >/dev/null; then
+              echo "::error::Expected exactly one non-empty $suffix release asset."
+              exit 1
+            fi
+          done
+
+          gh release edit "$RELEASE_TAG" --draft=false --latest --verify-tag
