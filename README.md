@@ -26,6 +26,8 @@ Some useful links:
    npm i
    ```
 
+This template uses npm as its package manager. Keep `package-lock.json` committed and use `npm ci` for reproducible installs in automation.
+
 ## Useful commands
 
 ### Start dev server
@@ -61,6 +63,10 @@ https://tauri.app/start/
 ### shadcn-svelte
 
 https://next.shadcn-svelte.com/
+
+## Versioning
+
+This project follows [Semantic Versioning 2.0.0](https://semver.org/). Incompatible changes to the template's documented APIs or integration patterns require a major release, backward-compatible capabilities use a minor release, and backward-compatible fixes use a patch release.
 
 ## License
 
